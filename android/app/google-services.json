@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "277554861356",
+    "project_id": "dr-ai-fdf8e",
+    "storage_bucket": "dr-ai-fdf8e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:277554861356:android:4b868f38bde8dae0da4889",
+        "android_client_info": {
+          "package_name": "com.example.dr_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkptqXwg2jDZH3qbmdzyo6R6Xb-8qKDdw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
