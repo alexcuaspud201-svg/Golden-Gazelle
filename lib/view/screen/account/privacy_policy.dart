@@ -193,27 +193,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHighlightedSection(String text) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: ColorManager.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8.r),
-        border:
-            Border.all(color: ColorManager.green.withOpacity(0.3), width: 1),
-      ),
-      child: SelectableText(
-        text,
-        style: TextStyle(
-          fontFamily: FontFamilyManager.poppins,
-          fontSize: 15.sp,
-          fontWeight: FontWeight.w600,
-          color: ColorManager.green,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildParagraph(String text) {
     return Padding(

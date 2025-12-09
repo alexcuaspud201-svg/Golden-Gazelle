@@ -1,9 +1,10 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart'; // For LatLngBounds
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class PlaceDirectionsModel {
   late LatLngBounds bounds;
-  late List<PointLatLng> polylinePoints;
+  late List<LatLng> polylinePoints;
   late String totalDistance;
   late String totalDuration;
 
@@ -15,31 +16,50 @@ class PlaceDirectionsModel {
   });
 
   factory PlaceDirectionsModel.fromJson(Map<String, dynamic> json) {
-    final data = json['routes'][0] as Map<String, dynamic>;
+    // Basic offline stub or simple parsing if structure matches
+    // For now, handling as simulation data mostly
+    
+    // If real data comes in unexpected format, provide defaults
+    if (json.containsKey('routes') && (json['routes'] as List).isNotEmpty) {
+        final data = json['routes'][0] as Map<String, dynamic>;
+        final northeast = data['bounds']['northeast'];
+        final southwest = data['bounds']['southwest'];
+    
+        final bounds = LatLngBounds(
+          LatLng(northeast['lat'], northeast['lng']),
+          LatLng(southwest['lat'], southwest['lng']),
+        );
+    
+        String distance = "0 km";
+        String duration = "0 min";
+    
+        if ((data['legs'] as List).isNotEmpty) {
+          final leg = data['legs'][0];
+          distance = leg['distance']['text'];
+          duration = leg['duration']['text'];
+        }
 
-    final northeast = data['bounds']['northeast'] as Map<String, dynamic>;
-    final southwest = data['bounds']['southwest'] as Map<String, dynamic>;
-
-    final bounds = LatLngBounds(
-      northeast: LatLng(northeast['lat'], northeast['lng']),
-      southwest: LatLng(southwest['lat'], southwest['lng']),
-    );
-
-    late String distance;
-    late String duration;
-
-    if ((data['legs'] as List).isNotEmpty) {
-      final leg = data['legs'][0] as Map<String, dynamic>;
-      distance = leg['distance']['text'] as String;
-      duration = leg['duration']['text'] as String;
+        final points = PolylinePoints()
+          .decodePolyline(data['overview_polyline']['points'] as String)
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .toList();
+    
+        return PlaceDirectionsModel(
+          bounds: bounds,
+          polylinePoints: points,
+          totalDistance: distance,
+          totalDuration: duration,
+        );
     }
-
+    
+    // Fallback/Stub
     return PlaceDirectionsModel(
-      bounds: bounds,
-      polylinePoints: PolylinePoints()
-          .decodePolyline(data['overview_polyline']['points'] as String),
-      totalDistance: distance,
-      totalDuration: duration,
+        bounds: LatLngBounds(const LatLng(0,0), const LatLng(0,0)), 
+        polylinePoints: [], 
+        totalDistance: "0 km", 
+        totalDuration: "0 min"
     );
+
   }
 }
+

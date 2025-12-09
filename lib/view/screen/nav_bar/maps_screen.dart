@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as log;
 import 'dart:math';
-import 'package:dr_ai/core/utils/constant/image.dart';
 import 'package:dr_ai/core/utils/theme/color.dart';
 import 'package:dr_ai/core/utils/helper/extention.dart';
 import 'package:dr_ai/core/utils/helper/location.dart';
@@ -14,14 +13,13 @@ import 'package:dr_ai/view/widget/custom_button.dart';
 import 'package:dr_ai/view/widget/custom_tooltip.dart';
 import 'package:dr_ai/view/widget/directions_details_card.dart';
 import 'package:dr_ai/view/widget/floating_search_bar.dart';
-import 'package:dr_ai/view/widget/locker_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:location/location.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart'; // Unified LatLng
 import '../../../core/utils/helper/scaffold_snakbar.dart';
 import '../../../data/model/find_hospital_place_info.dart';
 import '../../../controller/maps/maps_cubit.dart';
@@ -39,18 +37,9 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _scaffoldKey = GlobalKey<ScaffoldState>();
     _getCurrentLocation();
-
-    _checkMapLockStatus();
   }
 
-  void _checkMapLockStatus() =>
-      context.read<PermissionsCubit>().checkMapLockStatus();
-
   late GlobalKey<ScaffoldState> _scaffoldKey;
-  final Location _location = Location();
-
-  bool _isScreenLocked = false;
-  String? _message;
 
   Future<void> _getCurrentLocation() async {
     LocationData? locationData =
@@ -61,80 +50,33 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _goToSearchedPlaceLocation() async {
-    final GoogleMapController mapController = await completerController.future;
-    mapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          bearing: 0.0,
-          tilt: 0.0,
-          target: LatLng(
-            _selectedPlace.lat,
-            _selectedPlace.lng,
-          ),
-          zoom: 17,
-        ),
-      ),
-    );
+  void _goToSearchedPlaceLocation() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+        mapController.move(
+          LatLng(_selectedPlace.lat, _selectedPlace.lng),
+          17.0,
+        );
+    });
   }
 
-  Completer<GoogleMapController> completerController = Completer();
+  MapController mapController = MapController();
   static LocationData? _locationData;
 
-  static CameraPosition get _myCurrrentPositionCameraPosition => CameraPosition(
-      bearing: 0,
-      target: LatLng(_locationData!.latitude!, _locationData!.longitude!),
-      tilt: 0.0,
-      zoom: 17);
-
-  Set<Marker> _markers = {};
-  late String? _placeSuggestion;
+  List<Marker> _markers = [];
   late PlaceLocationModel _selectedPlace;
   late Marker _searchedPlaceMarker;
-  late CameraPosition _goToSearchedForPlace;
-
-  // Future<void> _loadCachedHospitals() async {
-  //   List<Map<String, dynamic>> cachedData =
-  //       CacheData.getListOfMaps(key: 'nearestHospitals');
-  //   if (cachedData.isNotEmpty) {
-  //     setState(() {
-  //       _cachedHospitalList = cachedData;
-  //       _addMarkersFromCachedHospitals();
-  //     });
-  //   }
-  // }
+  late LatLng _goToSearchedForPlace;
 
   bool _isLoading = false;
   List<FindHospitalsPlaceInfo?> _hospitalList = [];
-
-  // List<Map<String, dynamic>> _cachedHospitalList = [];
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<PermissionsCubit, PermissionsState>(
       listener: (context, state) {
-        if (state is MapLockSuccessState) {
-          _isScreenLocked = !state.isMapEnabled;
-          _message = state.message;
-          setState(() {});
-        }
-        if (state is MapLockUpdateSuccessState) {
-          _isScreenLocked = !state.isMapEnabled;
-          setState(() {});
-        }
-        if (state is MapLockErrorState) {
-          customSnackBar(
-              context, "Error al verificar el estado del bloqueo del mapa: ${state.error}");
-          _message = state.error;
-          _isScreenLocked = true;
-          setState(() {});
-        }
+       // logic removed
       },
-      child: LockerWidget(
-        isLocked: _isScreenLocked,
-        svgIconPath: ImageManager.splashLogo,
-        message: _message,
-        child: Scaffold(
+      child: Scaffold(
           key: _scaffoldKey,
           drawerScrimColor: ColorManager.black.withOpacity(0.4),
           drawer: _buildDrawer(),
@@ -193,80 +135,43 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 
   void _buildCameraNewPosition() {
     _isSearchedPlaceMarkerClicked = false;
     log.log("${_selectedPlace.lat}  ${_selectedPlace.lng}");
-    _goToSearchedForPlace = CameraPosition(
-      bearing: 0.0,
-      tilt: 0.0,
-      target: LatLng(
+    _goToSearchedForPlace = LatLng(
         _selectedPlace.lat,
         _selectedPlace.lng,
-      ),
-      zoom: 17,
-    );
+      );
     setState(() {});
   }
 
   Widget _buildMap() {
-    return GoogleMap(
-      mapToolbarEnabled: false,
-      // trafficEnabled: true,
-      compassEnabled: true,
-      buildingsEnabled: true,
-      markers: _markers.isEmpty
-          ? {
-              // Marker(
-              //   markerId: const MarkerId('currentLocation'),
-              //   position: LatLng(_locationData!.latitude!, _locationData!.longitude!),
-              //   icon: BitmapDescriptor.defaultMarkerWithHue(
-              //       BitmapDescriptor.hueGreen),
-              //   infoWindow: const InfoWindow(
-              //     title: 'Current Location',
-              //     snippet: 'This is your current location',
-              //   ),
-              // ),
-            }
-          : _markers,
-      initialCameraPosition: CameraPosition(
-        target: LatLng(_locationData!.latitude!, _locationData!.longitude!),
-        zoom: 15.0,
+    return FlutterMap(
+      options: MapOptions(
+        initialCenter: _locationData != null 
+            ? LatLng(_locationData!.latitude!, _locationData!.longitude!)
+            : const LatLng(-0.1807, -78.4678), // Default (Quito/Eq) or Safe fallback
+        initialZoom: 15.0,
       ),
-      circles: {
-        Circle(
-          circleId: const CircleId("current_location"),
-          center: LatLng(_locationData!.latitude!, _locationData!.longitude!),
-          radius: 70.r,
-          fillColor: ColorManager.green.withOpacity(0.25),
-          strokeColor: ColorManager.green.withOpacity(0.7),
-          strokeWidth: 1,
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.dr_ai',
         ),
-      },
-      mapType: MapType.normal,
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      onMapCreated: (GoogleMapController controller) {
-        completerController.complete(controller);
-      },
-      polylines: _placeDirections != null
-          ? {
-              Polyline(
-                geodesic: true,
-                startCap: Cap.roundCap,
-                endCap: Cap.roundCap,
-                jointType: JointType.round,
-                polylineId: const PolylineId('polyline'),
-                color: ColorManager.green,
-                width: 5,
-                points: _polylinePoints,
-              ),
-            }
-          : {},
+        MarkerLayer(
+          markers: _markers.map((m) {
+             return Marker(
+               point: m.point,
+               width: 40,
+               height: 40,
+               child: const Icon(Icons.location_on, color: ColorManager.green, size: 40),
+             );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -275,9 +180,11 @@ class _MapScreenState extends State<MapScreen> {
         await LocationHelper.determineCurrentPosition(context);
     if (locationData != null) {
       _locationData = locationData;
-      final GoogleMapController controller = await completerController.future;
-      controller.animateCamera(
-          CameraUpdate.newCameraPosition(_myCurrrentPositionCameraPosition));
+      setState(() {}); // Rebuild to update map center if needed
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+          mapController.move(
+            LatLng(_locationData!.latitude!, _locationData!.longitude!), 17.0);
+      });
     }
   }
 
@@ -288,7 +195,6 @@ class _MapScreenState extends State<MapScreen> {
           _selectedPlace = state.placeLocation[0];
           _placeDirections = null;
           setState(() {});
-          _placeSuggestion = state.placeLocation[1];
           log.log(_selectedPlace.toString());
           _goToMySearchedForLocation();
         }
@@ -299,84 +205,65 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _goToMySearchedForLocation() async {
     _buildCameraNewPosition();
-    final GoogleMapController controller = await completerController.future;
-    controller
-        .animateCamera(CameraUpdate.newCameraPosition(_goToSearchedForPlace));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       mapController.move(_goToSearchedForPlace, 17.0);
+    });
     _buildSearchedPlaceMarker();
   }
 
   void _buildSearchedPlaceMarker() {
-    String randomMarkerId = const Uuid().v4();
     _searchedPlaceMarker = Marker(
-      position: _goToSearchedForPlace.target,
-      markerId: MarkerId(randomMarkerId),
-      onTap: () {
-        _isSearchedPlaceMarkerClicked = true;
-        _isTimeAndDistanceVisible = true;
-        _getDirections();
-        setState(() {});
-      },
-      infoWindow: InfoWindow(title: _placeSuggestion),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      point: LatLng(_goToSearchedForPlace.latitude, _goToSearchedForPlace.longitude),
+      width: 40,
+      height: 40,
+      child: GestureDetector(
+        onTap: () {
+          _isSearchedPlaceMarkerClicked = true;
+          _isTimeAndDistanceVisible = true;
+          _getDirections();
+          setState(() {});
+        },
+        child: const Icon(Icons.location_on, color: ColorManager.green, size: 40),
+      ),
     );
 
     _addMarkerToMarkersAndUpdateUI(_searchedPlaceMarker);
   }
 
   void _addMarkerToMarkersAndUpdateUI(Marker marker) {
-    _markers = {};
+    _markers = [];
     setState(() {
       _markers.add(marker);
     });
   }
 
   void _addMarkersFromHospitalList() {
-    _markers = {};
+    _markers = [];
     for (var hospital in _hospitalList) {
+      if (hospital == null) continue;
       final marker = Marker(
-        markerId: MarkerId(hospital!.placeId),
-        position: LatLng(hospital.lat, hospital.lng),
-        infoWindow: InfoWindow(title: hospital.name),
-        onTap: () {
-          _selectedPlace =
-              PlaceLocationModel(lat: hospital.lat, lng: hospital.lng);
-          _isSearchedPlaceMarkerClicked = true;
-          _isTimeAndDistanceVisible = true;
-          _getDirections();
-          setState(() {});
-        },
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        point: LatLng(hospital.lat, hospital.lng),
+        width: 40,
+        height: 40,
+        child: GestureDetector(
+          onTap: () {
+            _selectedPlace =
+                PlaceLocationModel(lat: hospital.lat, lng: hospital.lng);
+            _isSearchedPlaceMarkerClicked = true;
+            _isTimeAndDistanceVisible = true;
+            _getDirections();
+            setState(() {});
+          },
+          child: const Icon(Icons.local_hospital, color: ColorManager.green, size: 40),
+        ),
       );
       _markers.add(marker);
     }
     setState(() {});
   }
 
-  // void _addMarkersFromCachedHospitals() {
-  //   _markers = {};
-  //   for (var hospital in _cachedHospitalList) {
-  //     final marker = Marker(
-  //       markerId: MarkerId(hospital['placeId']),
-  //       position: LatLng(hospital['lat'], hospital['lng']),
-  //       infoWindow: InfoWindow(title: hospital['name']),
-  //       onTap: () {
-  //         _selectedPlace =
-  //             PlaceLocationModel(lat: hospital['lat'], lng: hospital['lng']);
-  //         _isSearchedPlaceMarkerClicked = true;
-  //         _isTimeAndDistanceVisible = true;
-  //         _getDirections();
-  //         setState(() {});
-  //       },
-  //       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-  //     );
-  //     _markers.add(marker);
-  //   }
-  //   setState(() {});
-  // }
-
   PlaceDirectionsModel? _placeDirections;
 
-  late List<LatLng> _polylinePoints;
   bool _isSearchedPlaceMarkerClicked = false;
   bool _isTimeAndDistanceVisible = false;
 
@@ -387,21 +274,12 @@ class _MapScreenState extends State<MapScreen> {
       listener: (context, state) {
         if (state is MapsLoadedDirectionsSuccess) {
           _placeDirections = state.placeDirections;
-          _getPolylinePoints();
         }
       },
       child: Container(),
     );
   }
 
-  void _getPolylinePoints() {
-    _polylinePoints = [];
-    _polylinePoints = _placeDirections!.polylinePoints
-        .map((polyline) => LatLng(polyline.latitude, polyline.longitude))
-        .toList();
-  }
-
-  /// call
   Future<void> _getDirections() async {
     await context.bloc<MapsCubit>().getPlaceDirections(
           origin: LatLng(_locationData!.latitude!, _locationData!.longitude!),
@@ -434,9 +312,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _markNearestHospital() {
-    if (_hospitalList.isEmpty
-        // && _cachedHospitalList.isEmpty
-        ) return;
+    if (_hospitalList.isEmpty) return;
 
     double nearestDistance = double.infinity;
     FindHospitalsPlaceInfo? nearestHospital;
@@ -458,24 +334,29 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
 
-    _markers = {};
+    _markers = [];
     for (var hospital in _hospitalList) {
+      if (hospital == null) continue;
+      final isNearest = nearestHospital != null && hospital.placeId == nearestHospital.placeId;
       final marker = Marker(
-        markerId: MarkerId(hospital!.placeId),
-        position: LatLng(hospital.lat, hospital.lng),
-        infoWindow: InfoWindow(title: hospital.name),
-        onTap: () {
-          _selectedPlace =
-              PlaceLocationModel(lat: hospital.lat, lng: hospital.lng);
-          _isSearchedPlaceMarkerClicked = true;
-          _isTimeAndDistanceVisible = true;
-          _getDirections();
-          setState(() {});
-        },
-        icon: nearestHospital != null &&
-                hospital.placeId == nearestHospital.placeId
-            ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed)
-            : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        point: LatLng(hospital.lat, hospital.lng),
+        width: 40,
+        height: 40,
+        child: GestureDetector(
+          onTap: () {
+            _selectedPlace =
+                PlaceLocationModel(lat: hospital.lat, lng: hospital.lng);
+            _isSearchedPlaceMarkerClicked = true;
+            _isTimeAndDistanceVisible = true;
+            _getDirections();
+            setState(() {});
+          },
+          child: Icon(
+            Icons.local_hospital,
+            color: isNearest ? ColorManager.error : ColorManager.green,
+            size: isNearest ? 50 : 40,
+          ),
+        ),
       );
       _markers.add(marker);
     }
@@ -536,7 +417,6 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   _buildTotalHospital(
                       _hospitalList.isNotEmpty ? _hospitalList.length : 0
-                      // : _cachedHospitalList.length
                       ),
                   Gap(2.h),
                   (_hospitalList.isNotEmpty)
@@ -644,56 +524,6 @@ class _MapScreenState extends State<MapScreen> {
                             },
                           ),
                         )
-                      // : _cachedHospitalList.isNotEmpty
-                      //     ? Expanded(
-                      //         child: ListView.builder(
-                      //           itemCount: _cachedHospitalList.length,
-                      //           itemBuilder: (context, index) {
-                      //             final hospital =
-                      //                 _cachedHospitalList[index];
-                      //             return Card(
-                      //               child: ListTile(
-                      //                 onTap: () {
-                      //                   _selectedPlace =
-                      //                       PlaceLocationModel(
-                      //                     lat: hospital['lat'],
-                      //                     lng: hospital['lng'],
-                      //                   );
-                      //                   _buildCameraNewPosition();
-                      //                   _goToSearchedPlaceLocation();
-                      //                   _markNearestHospital();
-                      //                 },
-                      //                 title: Text(hospital['name'],
-                      //                     style: context
-                      //                         .textTheme.bodyMedium),
-                      //                 subtitle: Row(
-                      //                   children: [
-                      //                     Text(
-                      //                       (hospital['openNow'])
-                      //                           .toString(),
-                      //                       style: context
-                      //                           .textTheme.bodyMedium
-                      //                           ?.copyWith(
-                      //                               color: Colors.green),
-                      //                     ),
-                      //                   ],
-                      //                 ),
-                      //                 trailing:
-                      //                     const Icon(Icons.chevron_right),
-                      //                 leading: const Icon(Icons.healing),
-                      //               ),
-                      //             );
-                      //           },
-                      //         ),
-                      //       )
-                      //     : Expanded(
-                      //         child: Icon(
-                      //           Icons.find_replace_rounded,
-                      //           size: 100.sp,
-                      //           color:
-                      //               context.appBarTheme.backgroundColor,
-                      //         ),
-                      //       ),
                       : const Expanded(
                           child: Icon(
                             Icons.my_location_rounded,

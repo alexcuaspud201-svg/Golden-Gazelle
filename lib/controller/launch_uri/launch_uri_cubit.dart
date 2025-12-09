@@ -56,6 +56,10 @@ class LaunchUriCubit extends Cubit<LaunchUriState> {
 
   Future<void> openLink({required String url}) async {
     try {
+      if (url.isEmpty || Uri.tryParse(url)?.hasScheme != true) {
+         emit(LaunchUriState.launchFailure);
+         return;
+      }
       final Uri launchUri = Uri.parse(url);
       await launchUrl(launchUri, mode: LaunchMode.externalApplication);
       emit(LaunchUriState.launchOpen);

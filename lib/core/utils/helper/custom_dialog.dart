@@ -305,7 +305,7 @@ class LoginDialog extends StatelessWidget {
                 ),
                 Gap(3.h),
                 Text(
-                  "Por favor verifica tu correo para iniciar sesión.",
+                  "Hemos enviado un enlace a tu correo. ¡Verifícalo ANTES de iniciar sesión!",
                   textAlign: TextAlign.center,
                   style: context.textTheme.bodySmall?.copyWith(
                     color: ColorManager.error,

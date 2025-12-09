@@ -26,17 +26,17 @@ class UserDataModel {
   });
 
   UserDataModel.fromJson(Map<String, dynamic> json)
-      : email = json['email'],
-        uid = json['uid'],
-        name = json['name'],
-        phoneNumber = json['phoneNumber'],
-        dob = json['dob'],
-        gender = json['gender'],
-        bloodType = json['bloodType'],
-        height = json['height'],
-        weight = json['weight'],
-        chronicDiseases = json['chronicDiseases'],
-        familyHistoryOfChronicDiseases = json['familyHistoryOfChronicDiseases'];
+      : email = json['email'] ?? '',
+        uid = json['uid'] ?? '',
+        name = json['name'] ?? '',
+        phoneNumber = json['phoneNumber'] ?? '',
+        dob = json['dob'] ?? '',
+        gender = json['gender'] ?? '',
+        bloodType = json['bloodType'] ?? '',
+        height = json['height'] ?? '',
+        weight = json['weight'] ?? '',
+        chronicDiseases = json['chronicDiseases'] ?? '',
+        familyHistoryOfChronicDiseases = json['familyHistoryOfChronicDiseases'] ?? '';
 
   Map<String, dynamic> toJson() {
     return {

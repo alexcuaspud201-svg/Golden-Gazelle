@@ -25,13 +25,10 @@ class _MedicalTipCardState extends State<MedicalTipCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: BlocBuilder<MedicalTipsCubit, MedicalTipsState>(
-        builder: (context, state) {
-          return _buildCard(state);
-        },
-      ),
+    return BlocBuilder<MedicalTipsCubit, MedicalTipsState>(
+      builder: (context, state) {
+        return _buildCard(state);
+      },
     );
   }
 
@@ -66,8 +63,9 @@ class _MedicalTipCardState extends State<MedicalTipCard> {
           highlightColor: ColorManager.grey.withOpacity(0.4),
         ),
         child: _buildTipContent(
-          title: "عنوان النصيحة الطبية",
-          content: "هذا هو محتوى النصيحة الطبية التي سيتم عرضها للمستخدم. النصيحة الطبية تحتوي على معلومات مهمة للحفاظ على صحتك.",
+          title: "Consejo Médico",
+          content:
+              "Cargando consejo médico para su salu...",
         ),
       );
     } else if (state is MedicalTipsError) {
@@ -75,11 +73,12 @@ class _MedicalTipCardState extends State<MedicalTipCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildHeader("Medical Tips"),
+          _buildHeader("Consejos Médicos"),
           const Gap(8),
           Text(
-            "فشل في تحميل النصيحة الطبية. الرجاء المحاولة مرة أخرى لاحقًا.",
-            style: context.textTheme.bodySmall?.copyWith(color: ColorManager.black),
+            "Error al cargar consejos médicos. Por favor intente más tarde.",
+            style:
+                context.textTheme.bodySmall?.copyWith(color: ColorManager.black),
           ),
         ],
       );
@@ -90,8 +89,9 @@ class _MedicalTipCardState extends State<MedicalTipCard> {
       );
     } else {
       return _buildTipContent(
-        title: "Medical Tips",
-        content: "ابق على اطلاع بأحدث النصائح الطبية والمشورة الصحية للحفاظ على نمط حياة صحي.",
+        title: "Consejos Médicos",
+        content:
+            "Manténgase al día con los últimos consejos médicos para un estilo de vida saludable.",
       );
     }
   }

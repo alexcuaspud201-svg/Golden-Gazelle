@@ -7,9 +7,7 @@ part 'formvalidation_state.dart';
 
 class ValidationCubit extends Cubit<FormvalidationState> {
   ValidationCubit() : super(FormvalidationInitial());
-  String _email = '';
   String _password = '';
-  String _confirmPassword = '';
   TextDirection? getTextDirection(String text) {
     bool isArabic = RegExp(r'[\u0600-\u06FF]').hasMatch(text);
     return isArabic ? TextDirection.rtl : TextDirection.ltr;
@@ -78,7 +76,6 @@ class ValidationCubit extends Cubit<FormvalidationState> {
     if (value != _password) {
       return 'Las contraseñas no coinciden';
     }
-    _confirmPassword = value;
 
     emit(ConfirmPasswordValidationSuccess());
     return null;
@@ -91,7 +88,6 @@ class ValidationCubit extends Cubit<FormvalidationState> {
     if (!_hasValidEmail(value)) {
       return 'Por favor ingrese una dirección de correo electrónico válida';
     }
-    _email = value;
     // if (firebaseException != null ||
     //     firebaseException != '' ||
     //     firebaseException?.isNotEmpty == true) {

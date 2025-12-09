@@ -2,7 +2,7 @@ import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.da
 import 'package:dr_ai/core/utils/theme/color.dart';
 import 'package:dr_ai/core/utils/helper/extention.dart';
 import 'package:dr_ai/view/screen/nav_bar/account_screen.dart';
-import 'package:dr_ai/view/screen/nav_bar/nfc_screen.dart';
+import 'package:dr_ai/simulator/nfc_simulator_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -40,7 +40,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
   List<Widget> _buildScreens() {
     return <Widget>[
       const HomeScreen(),
-      const NFCScreen(),
+      const NfcSimulatorPage(),
       const MapScreen(),
       const AccountScreen(),
     ];

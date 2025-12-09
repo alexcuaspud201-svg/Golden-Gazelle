@@ -24,7 +24,6 @@ class NewPasswordScreen extends StatefulWidget {
 
 class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? _password;
   String? _confirmPassword;
   bool _isLoading = false;
   @override
@@ -71,9 +70,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                             isVisible: true,
                             title: "New Password",
                             hintText: "Enter Your New Password",
-                            onSaved: (data) {
-                              _password = data;
-                            },
+                            onSaved: (data) {},
                             validator: validator.validatePassword,
                           ),
                           CustomTextFormField(

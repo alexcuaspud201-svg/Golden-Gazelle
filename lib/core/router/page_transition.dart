@@ -208,8 +208,7 @@ class PageTransitionManager {
 
 class CustomMaterialPageRoute<T> extends MaterialPageRoute<T> {
   CustomMaterialPageRoute(
-      {required WidgetBuilder builder, RouteSettings? settings})
-      : super(builder: builder, settings: settings);
+      {required super.builder, super.settings});
 
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,

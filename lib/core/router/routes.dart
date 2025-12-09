@@ -15,9 +15,9 @@ class RouteManager {
   static const maps = "/maps";
   static const oldPassword = "/oldPassword";
   static const newPassword = "/newPassword";
-  static const aboutUs = "/aboutUs";
+  // static const aboutUs = "/aboutUs"; // Removed
   static const reAuthScreen = "/reAuthScreen";
-  static const deleteAccount = "/deleteAccount";
+  // static const deleteAccount = "/deleteAccount"; // Removed
   static const termsAndConditions = "/termsAndConditions";
   static const privacyPolicy = "/privacyPolicy";
   static const contactUs = "/contactUs";

@@ -42,7 +42,7 @@ class NfcService {
 
       try {
         final ndef = await FlutterNfcKit.readNDEFRecords();
-        if (ndef != null && ndef.isNotEmpty) {
+        if (ndef.isNotEmpty) {
           log('--- NDEF Data Found ---');
           log('Number of NDEF Records: ${ndef.length}');
 

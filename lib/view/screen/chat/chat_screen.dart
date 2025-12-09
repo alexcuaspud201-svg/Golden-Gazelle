@@ -23,7 +23,6 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  bool _isSenderLoading = false;
   bool _isReceiverLoading = false;
   bool _isChatDeletingLoading = false;
   bool _isButtonVisible = false;
@@ -94,12 +93,11 @@ class _ChatScreenState extends State<ChatScreen> {
       listener: (context, state) {
         if (state is ChatSenderLoading) {
           setState(() {
-            _isSenderLoading = true;
             _txtController.clear();
           });
         }
         if (state is ChatSendSuccess) {
-          _isSenderLoading = false;
+          // sender logic complete
         }
         if (state is ChatReceiverLoading) {
           _isReceiverLoading = true;
@@ -110,7 +108,6 @@ class _ChatScreenState extends State<ChatScreen> {
           _scrollToEnd();
         }
         if (state is ChatFailure) {
-          _isSenderLoading = false;
           _isReceiverLoading = false;
           alertMessage(context, message: state.message);
         }

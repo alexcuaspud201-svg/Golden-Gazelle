@@ -126,7 +126,7 @@ class FirebaseService {
         .set({
       'uid': userCredential.user!.uid,
       'email': userCredential.user!.email,
-      'name': userCredential.user!.displayName,
+      // 'name': userCredential.user!.displayName, // REMOVING THIS to prevent overwriting with null
       //   'image': userCredential.user?.photoURL,
       'time': DateTime.now().toString(),
     }, SetOptions(merge: true));

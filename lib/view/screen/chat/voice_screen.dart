@@ -38,6 +38,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> {
 
   Future<void> _initSpeech() async {
     bool available = await _speechToText.initialize();
+    if (!mounted) return;
     if (!available) {
       customSnackBar(context, 'Error al inicializar el reconocimiento de voz');
     }
@@ -109,7 +110,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> {
         _transcribedText = 'Error: $e';
         _isProcessing = false;
       });
-      customSnackBar(context, 'Error al enviar el mensaje');
+      if (mounted) {
+        customSnackBar(context, 'Error al enviar el mensaje');
+      }
     }
   }
 

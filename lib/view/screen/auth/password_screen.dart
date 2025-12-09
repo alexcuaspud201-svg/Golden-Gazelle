@@ -29,7 +29,6 @@ class _PasswordScreenState extends State<PasswordScreen> {
   }
 
   String? _password;
-  String? _confirmPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +100,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
             isVisible: true,
             title: "Confirmar Contraseña",
             hintText: "Confirma tu contraseña",
-            onSaved: (data) {
-              _confirmPassword = data;
-            },
+            onSaved: (data) {},
             validator: cubit.validateConfirmPassword,
           ),
         ],

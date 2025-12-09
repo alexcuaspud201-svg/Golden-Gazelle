@@ -35,7 +35,7 @@ dependencies:
   cached_network_image: ^3.3.1
   cloud_firestore: ^5.6.8
   cupertino_icons: ^1.0.2
-  dio: ^5.4.0
+  # dio: ^5.4.0 # Removed
   dropdown_button2: ^2.3.6
   easy_stepper: ^0.8.3
   firebase_auth: ^5.5.4
@@ -49,12 +49,24 @@ dependencies:
   flutter_facebook_auth: ^7.1.2
   flutter_polyline_points: ^2.0.0
   flutter_screenutil: ^5.9.0
-  flutter_svg: ^2.0.10+1
-  flutter_tts: ^4.2.3
+  flutter_svg: ^2.0.17
+  flutter_tts: ^4.2.1
   formatted_text: ^4.0.1
   gap: ^3.0.1
-  google_generative_ai: ^0.4.7
-  google_maps_flutter: ^2.5.3
+  # Maps & Location (Open Source)
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  
+  # google_generative_ai: ^0.4.7 # Removed
+  # google_maps_flutter: ^2.5.3 # Removed
+
+  # Local AI & NLP (Offline)
+  # tflite_flutter: ^0.10.4 # Commented out until assets setup
+  
+  # UI & Utils
+  font_awesome_flutter: ^10.7.0
   google_sign_in: ^6.1.6
   hive: ^2.2.3
   hive_flutter: ^1.1.0
@@ -80,17 +92,20 @@ dependencies:
   device_info_plus: ^11.3.0
   share_plus: ^11.0.0
   open_filex: ^4.7.0
+  equatable: ^2.0.7
+  http: ^1.6.0
+  crypto: ^3.0.3
+  pdf: ^3.10.7
+  printing: ^5.11.0
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.14.3
+  flutter_launcher_icons: ^0.13.1
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/images/logo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  integration_test:
+    sdk: flutter
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.

@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/release
 
 .env
+
+# Custom Ignored Files (Logs, Temp, Artifacts)
+*.txt
+*.cer
+*.jks
+key_info.txt
+report.txt
+.gemini/

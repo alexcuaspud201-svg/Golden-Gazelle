@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:dr_ai/core/utils/constant/image.dart';
 import 'package:dr_ai/core/router/routes.dart';
 import 'package:dr_ai/core/utils/helper/extention.dart';
@@ -7,7 +8,7 @@ import 'package:dr_ai/view/widget/loading_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 
 import '../../core/utils/theme/color.dart';
 import '../../controller/chat/chat_cubit.dart';
@@ -32,6 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
         milliseconds: 1500,
       ),
       () {
+        if (!context.mounted) return;
         context.bloc<ChatCubit>().initHive();
         Navigator.pushReplacementNamed(
             context,
@@ -59,8 +61,8 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              SvgPicture.asset(
-                ImageManager.splashLogo,
+              Image.asset(
+                Theme.of(context).brightness == Brightness.dark ? ImageManager.logoWhite : ImageManager.logo,
                 width: context.width / 3,
                 height: context.width / 3,
               ),

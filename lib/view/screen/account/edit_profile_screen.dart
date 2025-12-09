@@ -22,7 +22,7 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  @override
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _name;
   String? _email;
@@ -82,8 +82,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               chronicDiseases: _chronicDiseases ?? _userData['chronicDiseases'],
               familyHistoryOfChronicDiseases: _familyHistoryOfChronicDiseases ??
                   _userData['familyHistoryOfChronicDiseases'],
-            )
-            .then((_) => context.pop());
+            );
+            // Removed .then((_) => context.pop()); letting listener handle it
       }
     }
   }
@@ -99,6 +99,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _isloading = false;
           customSnackBar(
               context, "Perfil actualizado exitosamente", ColorManager.green);
+           // Pop after a short delay to let user see the message
+           Future.delayed(const Duration(seconds: 1), () {
+             if(context.mounted) context.pop();
+           });
         }
         if (state is ProfileUpdateFailure) {
           _isloading = false;
@@ -120,7 +124,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Column(
                     children: [
                       _buildUserCard(context,
-                          char: _userData['name'][0], name: _userData['name']),
+                          char: (_userData['name'] != null && _userData['name'].toString().isNotEmpty)
+                              ? _userData['name'][0]
+                              : '?',
+                          name: _userData['name'] ?? "Usuario"),
                       _buildUserProfileDataFields(
                         context,
                         _userData,

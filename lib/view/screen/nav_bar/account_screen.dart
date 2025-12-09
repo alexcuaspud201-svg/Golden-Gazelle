@@ -1,3 +1,4 @@
+// ignore_for_file: unused_import
 import 'package:dr_ai/core/cache/cache.dart';
 import 'package:dr_ai/core/utils/theme/color.dart';
 import 'package:dr_ai/core/utils/constant/image.dart';
@@ -13,7 +14,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import '../../widget/build_profile_card.dart';
 import '../account/edit_user_card_buttom_sheet.dart';
-import '../account/rating_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -41,7 +41,7 @@ class _AccountScreenState extends State<AccountScreen> {
           _userData = state.userDataModel;
         }
       },
-      builder: (context, state) {
+  builder: (context, state) {
         return Scaffold(
           backgroundColor: context.theme.scaffoldBackgroundColor,
           body: SingleChildScrollView(
@@ -65,24 +65,6 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                   divider,
                   BuildProfileCard(
-                    title: "Modo Oscuro",
-                    image: ImageManager.darkModeIcon,
-                    onPressed: () {},
-                  ),
-                  divider,
-                  BuildProfileCard(
-                      title: "Idiomas",
-                      image: ImageManager.languageIcon,
-                      onPressed: () {}),
-                  divider,
-                  BuildProfileCard(
-                    title: "Cambiar Contraseña",
-                    image: ImageManager.changePasswordIcon,
-                    onPressed: () =>
-                        Navigator.pushNamed(context, RouteManager.oldPassword),
-                  ),
-                  divider,
-                  BuildProfileCard(
                       title: "Términos y Condiciones",
                       image: ImageManager.termsIcon,
                       onPressed: () => Navigator.pushNamed(
@@ -93,31 +75,6 @@ class _AccountScreenState extends State<AccountScreen> {
                       image: ImageManager.privacyPolicyIcon,
                       onPressed: () => Navigator.pushNamed(
                           context, RouteManager.privacyPolicy)),
-                  divider,
-                  BuildProfileCard(
-                    title: "Sobre Nosotros",
-                    image: ImageManager.aboutUsIcon,
-                    onPressed: () =>
-                        Navigator.pushNamed(context, RouteManager.aboutUs),
-                  ),
-                  divider,
-                  BuildProfileCard(
-                    title: "Califícanos",
-                    image: ImageManager.rateUsIcon,
-                    onPressed: () {
-                      CacheData.getdata(key: "rating") ?? cubit.getUserRating();
-                      customDialogWithAnimation(context,
-                          screen: const RatingScreen());
-                    },
-                  ),
-                  divider,
-                  BuildProfileCard(
-                    title: "Eliminar Cuenta",
-                    image: ImageManager.deteteAccountIcon,
-                    color: ColorManager.error,
-                    onPressed: () =>
-                        Navigator.pushNamed(context, RouteManager.reAuthScreen),
-                  ),
                   divider,
                   BuildProfileCard(
                       title: "Cerrar Sesión",

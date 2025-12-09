@@ -3,14 +3,14 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+// import 'package:google_generative_ai/google_generative_ai.dart'; // Removed
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../data/source/local/chat_message_model.dart';
-import '../../data/source/remote/ai_webservices.dart';
-import '../../core/utils/constant/ai_content.dart';
+import '../../data/source/local/local_ai_service.dart'; // New Service
+// import '../../core/utils/constant/ai_content.dart'; // Removed
 
 part 'chat_state.dart';
 
@@ -74,19 +74,22 @@ class ChatCubit extends Cubit<ChatState> {
 
       emit(ChatReceiverLoading());
 
-      final List<Content> content = [
-        ...AiConstantsContent.content,
-        ...(_messagesBox?.values
-            .toList()
-            .map((msg) => Content.text(msg.message))
-            .toList() ??
-            []),
-      ];
-      final response = await GenerativeAiWebService.postData(content: content);
-      log(response.toString());
+      // Collect History (Simple List of Strings)
+      final List<String> history = _messagesBox?.values
+          .map((msg) => msg.message)
+          .toList() ?? [];
+
+      // Call Local AI Service
+      final response = await LocalAiService.generateResponse(
+          history: history, 
+          newMessage: message
+      );
+      
+      log("AI Response: $response");
+      
       await _messagesBox?.add(ChatMessageModel(
         isUser: false,
-        message: response ?? "ERROR",
+        message: response,
         timeTamp: dateTimeFormatter(),
       ));
       emit(ChatSendSuccess());
@@ -98,44 +101,8 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   Future<void> sendMessageAndWaitForResponse({required String message}) async {
-    emit(ChatSenderLoading());
-    try {
-      final chatMessageModel = ChatMessageModel(
-        isUser: true,
-        message: message.trim(),
-        timeTamp: dateTimeFormatter(),
-      );
-      await _messagesBox?.add(chatMessageModel);
-      emit(ChatSendSuccess());
-      final List<Content> content = [
-        ...AiConstantsContent.content,
-        ...(_messagesBox?.values
-            .toList()
-            .map((msg) => Content.text(msg.message))
-            .toList() ??
-            []),
-      ];
-      emit(ChatReceiverLoading());
-      final response = await GenerativeAiWebService.postData(content: content);
-      log(response.toString());
-
-      await _messagesBox?.add(ChatMessageModel(
-        isUser: false,
-        message: response ?? "ERROR",
-        timeTamp: dateTimeFormatter(),
-      ));
-
-      List<ChatMessageModel> messages =
-          _messagesBox?.values
-              .toList()
-              .reversed
-              .toList() ?? [];
-      emit(ChatReceiveSuccess(response: messages));
-    } on HiveError catch (err) {
-      emit(ChatFailure(message: err.message.toString()));
-    } catch (e) {
-      emit(ChatFailure(message: e.toString()));
-    }
+    // Reusing the same implementation for simplicity in offline mode
+    await sendMessage(message: message);
   }
 
   Future<void> deleteAllMessages() async {

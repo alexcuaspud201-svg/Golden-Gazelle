@@ -15,10 +15,18 @@ class SignUpCubit extends Cubit<SignUpState> {
   Future<void> verifyEmail() async {
     emit(SignUpLoading());
     try {
-      await FirebaseService.emailVerify();
-      emit(VerifyEmailSuccess());
-    } on FirebaseException catch (err) {
-      emit(VerifyEmailFailure(errorMessage: err.message ?? err.code));
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.reload(); // Ensure user state is fresh
+        await user.sendEmailVerification();
+        log("Verification email sent to ${user.email}");
+        emit(VerifyEmailSuccess());
+      } else {
+        throw Exception("User not found (Null)");
+      }
+    } catch (err) {
+      log("Email Verification Error: $err");
+      emit(VerifyEmailFailure(errorMessage: "Error: $err"));
     }
   }
 
@@ -31,8 +39,9 @@ class SignUpCubit extends Cubit<SignUpState> {
         password: password,
       );
       emit(CreatePasswordSuccess());
-    } on FirebaseAuthException catch (err) {
-      emit(CreateProfileFailure(errorMessage: err.message ?? err.code));
+    } catch (err) {
+      log("Create Email Error: $err");
+      emit(CreateProfileFailure(errorMessage: err.toString()));
     }
   }
 
@@ -58,9 +67,11 @@ class SignUpCubit extends Cubit<SignUpState> {
           weight: weight,
           chronicDiseases: chronicDiseases,
           familyHistoryOfChronicDiseases: familyHistoryOfChronicDiseases);
+      await FirebaseAuth.instance.currentUser?.updateDisplayName(name); // Ensure Auth profile has name
       emit(CreateProfileSuccess());
-    } on FirebaseException catch (err) {
-      emit(CreateProfileFailure(errorMessage: err.message ?? err.code));
+    } catch (err) {
+      log("Create Profile Error: $err");
+      emit(CreateProfileFailure(errorMessage: err.toString()));
     }
   }
 
@@ -71,8 +82,8 @@ class SignUpCubit extends Cubit<SignUpState> {
         final querySnapshot = await _firestore
             .collection('users')
             .where('isActive', isEqualTo: true)
-            .get()
-            .timeout(const Duration(seconds: 5));
+            .get();
+            // .timeout(const Duration(seconds: 5)); // Removed timeout to let Firestore handle connection
         final isEmailInUse = querySnapshot.docs
             .any((doc) => doc.data()['email'] == emailAddress);
         if (isEmailInUse) {
@@ -85,10 +96,11 @@ class SignUpCubit extends Cubit<SignUpState> {
           log("Email not in use");
         }
       } else {
-        Future.delayed(const Duration(seconds: 10), () {
+        // Reset counter after a short delay internally, but tell user to wait
+        Future.delayed(const Duration(seconds: 5), () {
           _ctn = 0;
         });
-        emit(EmailNotValid(message: "Demasiadas solicitudes, inténtalo de nuevo más tarde"));
+        emit(EmailNotValid(message: "Demasiadas solicitudes, espera unos segundos"));
       }
     } on FirebaseAuthException catch (err) {
       log(err.message.toString());

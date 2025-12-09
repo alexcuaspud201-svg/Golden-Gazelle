@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
@@ -22,12 +23,17 @@ class AccountCubit extends Cubit<AccountState> {
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .snapshots()
           .listen((event) {
-        userDataModel = UserDataModel.fromJson(event.data()!);
-        CacheData.setData(key: "name", value: userDataModel!.name);
-        CacheData.setMapData(key: "userData", value: userDataModel!.toJson());
-        emit(AccountSuccess(userDataModel: userDataModel!));
+        if (event.data() != null) {
+          userDataModel = UserDataModel.fromJson(event.data()!);
+          CacheData.setData(key: "name", value: userDataModel!.name);
+          CacheData.setMapData(key: "userData", value: userDataModel!.toJson());
+          emit(AccountSuccess(userDataModel: userDataModel!));
+        } else {
+           // Handle user not found or empty document
+           emit(AccountFailure(message: "Usuario no encontrado en base de datos"));
+        }
       });
-    } on FirebaseException catch (err) {
+    } catch (err) {
       emit(AccountFailure(message: err.toString()));
     }
   }
@@ -47,7 +53,7 @@ class AccountCubit extends Cubit<AccountState> {
   Future<void> deleteAccount() async {
     emit(AccountDeleteLoading());
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      // await Future.delayed(const Duration(milliseconds: 500));
       await _deleteChatHistory();
       await _firestore
           .collection('users')
@@ -71,26 +77,9 @@ class AccountCubit extends Cubit<AccountState> {
     }
   }
 
-  //! DELETE USER DATA
-  Future<void> _deleteUserData() async {
-    emit(UserDataDeletingLoading());
-    try {
-      await _firestore
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .get();
-      log("DELETED USER DATA");
-      await CacheData.clearData(clearData: true);
-      log("DELETED CACHE DATA");
-      emit(UserDataDeleteSuccess());
-      log("ACCOUNT DELETED SUCCESSFULLY");
-    } on FirebaseException catch (err) {
-      log("${err.message} \n ${err.stackTrace} \n ${err.code.toString()} \n ${err.plugin}");
-      emit(UserDataDeleteFailure(message: "Failed to delete user data"));
-    }
-  }
 
-//! DELETE Chat History
+
+  //! DELETE Chat History
 
   Future<void> _deleteChatHistory() async {
     CollectionReference messagesCollection = FirebaseFirestore.instance
@@ -111,54 +100,20 @@ class AccountCubit extends Cubit<AccountState> {
     }
   }
 
-  //   Future<void> deleteAccount() async {
-  //   emit(AccountDeleteLoading());
-  //   try {
-  //     final user = FirebaseAuth.instance.currentUser;
-  //     if (user != null) {
-  //       final uid = user.uid;
-  //       final batch = FirebaseFirestore.instance.batch();
-  //       batch.delete(
-  //           FirebaseFirestore.instance.collection('chat_history').doc(uid));
-  //       batch.delete(FirebaseFirestore.instance.collection('users').doc(uid));
-  //       await batch
-  //           .commit()
-  //           .then((_) => log("DELETED CHAT HISTORY AND USER DATA"));
-
-  //       await CacheData.clearData(clearData: true);
-  //       log("DELETED CACHE DATA");
-
-  //       await user.delete();
-  //       log("DELETED USER ACCOUNT");
-
-  //       await FirebaseAuth.instance.signOut();
-  //       log("LOGGED OUT");
-
-  //       emit(AccountDeleteSuccess(message: "Account deleted successfully"));
-  //       log("ACCOUNT DELETED SUCCESSFULLY");
-  //     }
-  //   } catch (err) {
-  //     emit(AccountFailure(message: err.toString()));
-  //     log("ERROR: ${err.toString()}");
-  //   }
-  // }
-
   //? update user name
 
   Future<void> updateUserName({required String newName}) async {
     emit(ProfileUpdateLoading());
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
+      // await Future.delayed(const Duration(milliseconds: 400));
       await _firestore
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
-          .update({'name': newName})
-          .whenComplete(() => emit(ProfileUpdateSuccess()))
-          .timeout(const Duration(seconds: 5),
-              onTimeout: () => emit(ProfileUpdateFailure(
-                  message: "There was an error, please try again")));
-    } on FirebaseException catch (err) {
-      emit(ProfileUpdateFailure(message: err.toString()));
+          .set({'name': newName}, SetOptions(merge: true));
+      
+      emit(ProfileUpdateSuccess());
+    } catch (err) {
+      emit(ProfileUpdateFailure(message: "Error: $err"));
     }
   }
 
@@ -176,11 +131,11 @@ class AccountCubit extends Cubit<AccountState> {
   }) async {
     emit(ProfileUpdateLoading());
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
+      // await Future.delayed(const Duration(milliseconds: 400));
       await _firestore
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
-          .update({
+          .set({
             'name': name,
             'email': email,
             'phoneNumber': phoneNumber,
@@ -191,19 +146,17 @@ class AccountCubit extends Cubit<AccountState> {
             'bloodType': bloodType,
             'chronicDiseases': chronicDiseases,
             'familyHistoryOfChronicDiseases': familyHistoryOfChronicDiseases
-          })
-          .whenComplete(() => emit(ProfileUpdateSuccess()))
-          .timeout(const Duration(seconds: 5),
-              onTimeout: () => emit(ProfileUpdateFailure(
-                  message: "There was an error, please try again")));
-    } on FirebaseException catch (err) {
-      emit(ProfileUpdateFailure(message: err.toString()));
+          }, SetOptions(merge: true));
+      
+      emit(ProfileUpdateSuccess());
+    } catch (err) {
+      emit(ProfileUpdateFailure(message: "Error: $err"));
     }
   }
 
   Future<void> reAuthenticateUser(String password) async {
     emit(AccountReAuthLoading());
-    await Future.delayed(const Duration(milliseconds: 400));
+    // Removed artificial delay
     final FirebaseAuth auth = FirebaseAuth.instance;
     final User? user = auth.currentUser;
 
@@ -216,62 +169,65 @@ class AccountCubit extends Cubit<AccountState> {
         log('User re-authenticated successfully');
       } on FirebaseAuthException catch (err) {
         if (err.code == 'wrong-password' || err.code == 'invalid-credential') {
-          emit(AccountReAuthFailure(message: 'Wrong password'));
+          emit(AccountReAuthFailure(message: 'Contraseña incorrecta'));
         } else if (err.code == 'too-many-requests') {
           emit(AccountReAuthFailure(
-              message: 'Too many requests, try again later'));
+              message: 'Demasiadas solicitudes, inténtalo de nuevo más tarde'));
         } else {
           emit(AccountReAuthFailure(message: err.message.toString()));
         }
+      } catch (e) {
+         emit(AccountReAuthFailure(message: e.toString()));
       }
     } else {
-      log('No user found. Please sign in first.');
+      emit(AccountReAuthFailure(message: 'No user found'));
     }
   }
 
   Future<void> updatePassword(String newPassword) async {
     emit(AccountUpdatePasswordLoading());
-    await Future.delayed(const Duration(milliseconds: 400));
+    // Removed artificial delay
     final FirebaseAuth auth = FirebaseAuth.instance;
     final User? user = auth.currentUser;
 
     if (user != null) {
       try {
-        await user.updatePassword(newPassword).whenComplete(() {
-          emit(AccountUpdatePasswordSuccess(
-              message: 'Password updated successfully'));
-          log('Password updated successfully');
-        }).timeout(const Duration(seconds: 5),
-            onTimeout: () => emit(AccountUpdatePasswordFailure(
-                message: "There was an error, please try again")));
+        await user.updatePassword(newPassword);
+        emit(AccountUpdatePasswordSuccess(
+              message: 'Contraseña actualizada exitosamente'));
+        log('Password updated successfully');
       } on FirebaseAuthException catch (err) {
         emit(AccountUpdatePasswordFailure(message: err.message.toString()));
         log('Password update failed: ${err.message}');
+      } catch (e) {
+        emit(AccountUpdatePasswordFailure(message: "Error: $e"));
       }
     } else {
-      log('No user found. Please sign in first.');
+      emit(AccountUpdatePasswordFailure(message: 'No user found'));
     }
   }
 
   Future<void> storeUserRating(int rating) async {
     emit(AccountRatingLoading());
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
+      // Removed artificial delay
       DocumentReference userDocRef = _firestore
           .collection('ratings')
           .doc(FirebaseAuth.instance.currentUser!.uid);
+          
       await userDocRef.set({
         'rating': '$rating / 5',
-      }, SetOptions(merge: true)).whenComplete(() async {
-        emit(AccountRatingSuccess());
-        await CacheData.setData(key: "rating", value: rating);
-        log('User rating updated successfully.');
-      }).timeout(const Duration(seconds: 5),
-          onTimeout: () => emit(AccountRatingFailure(
-              message: "There was an error, please try again")));
+      }, SetOptions(merge: true));
+      
+      await CacheData.setData(key: "rating", value: rating);
+      emit(AccountRatingSuccess());
+      log('User rating updated successfully.');
+      
     } on FirebaseException catch (err) {
       emit(AccountRatingFailure(message: err.message.toString()));
       log('Error updating user rating: $err');
+    } catch (e) {
+      emit(AccountRatingFailure(message: e.toString()));
     }
   }
 

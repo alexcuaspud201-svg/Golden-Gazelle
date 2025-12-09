@@ -1,15 +1,17 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.dr_ai">
     <application
-        android:label="Dr AI"
+        android:label="Golden Gazelle"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true">
-        <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDnO-dQ__IxHWScCzf-cM7FBadEzJw07D8" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA_tchFt5HiqIbvBFIS1ou855O1FJqMrb8"/>
         <meta-data
             android:name="com.google.android.gms.applicationId"
-            android:value="1:277554861356:android:4b868f38bde8dae0da4889" />
+            android:value="1:1072537206678:android:fb61467fa6bed3f4a727b7"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -17,92 +19,112 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <!-- Theme meta-data -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme" />
+                android:resource="@style/NormalTheme"/>
             <!-- <meta-data
                 android:name="io.flutter.embedding.android.SplashScreenDrawable"
                 android:resource="@drawable/launch_background" /> -->
             <!-- Launcher intent filter -->
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
             <!-- NFC Intent Filters -->
             <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
+                <action
+                    android:name="android.nfc.action.NDEF_DISCOVERED"/>
+                <category
+                    android:name="android.intent.category.DEFAULT"/>
+                <data
+                    android:mimeType="text/plain"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="android.nfc.action.TECH_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action
+                    android:name="android.nfc.action.TECH_DISCOVERED"/>
+                <category
+                    android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <!-- Flutter embedding -->
         <meta-data
             android:name="flutterEmbedding"
-            android:value="2" />
+            android:value="2"/>
     </application>
-
     <!-- Network Permissions -->
     <!-- Storage Permissions (deprecated in Android 13+, only for older versions) -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-    
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <!-- Storage Permissions for Android 13+ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_VIDEO"/>
     <!-- Network Permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
+    <uses-permission
+        android:name="android.permission.INTERNET"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- Camera Permission -->
-    <uses-permission android:name="android.permission.CAMERA"/>
-    
+    <uses-permission
+        android:name="android.permission.CAMERA"/>
     <!-- Audio and Bluetooth Permissions -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <uses-permission
+        android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_CONNECT"/>
     <!-- Location Permission -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- NFC Permission and Feature -->
-    <uses-permission android:name="android.permission.NFC" />
-    <uses-feature android:name="android.hardware.nfc" android:required="false" />
-
+    <uses-permission
+        android:name="android.permission.NFC"/>
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="false"/>
     <!-- Required visibility configuration for API level 30 and above -->
-
     <queries>
-
         <!-- SMS support check -->
         <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="sms" />
+            <action
+                android:name="android.intent.action.VIEW"/>
+            <data
+                android:scheme="sms"/>
         </intent>
         <!-- Call support check -->
         <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="tel" />
+            <action
+                android:name="android.intent.action.VIEW"/>
+            <data
+                android:scheme="tel"/>
         </intent>
         <!-- CustomTabsService support check -->
         <intent>
-            <action android:name="android.support.customtabs.action.CustomTabsService" />
+            <action
+                android:name="android.support.customtabs.action.CustomTabsService"/>
         </intent>
         <intent>
-            <action android:name="android.speech.RecognitionService" />
+            <action
+                android:name="android.speech.RecognitionService"/>
         </intent>
         <!-- Email support check -->
         <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="mailto" />
+            <action
+                android:name="android.intent.action.VIEW"/>
+            <data
+                android:scheme="mailto"/>
         </intent>
     </queries>
 </manifest>

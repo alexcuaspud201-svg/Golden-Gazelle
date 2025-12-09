@@ -69,4 +69,6 @@
 
   //? PNG
   static const String robotIcon = "assets/images/robot.png";
+  static const String logo = "assets/images/logo.png";
+  static const String logoWhite = "assets/images/logo_white.png";
 }

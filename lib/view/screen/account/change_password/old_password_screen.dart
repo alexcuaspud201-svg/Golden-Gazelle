@@ -1,5 +1,4 @@
 import 'package:dr_ai/core/router/routes.dart';
-import 'package:dr_ai/core/utils/helper/custom_dialog.dart';
 import 'package:dr_ai/core/utils/helper/extention.dart';
 import 'package:dr_ai/controller/validation/formvalidation_cubit.dart';
 import 'package:dr_ai/view/widget/button_loading_indicator.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../core/utils/theme/color.dart';
-import '../../../../core/utils/constant/image.dart';
 import '../../../../core/utils/helper/scaffold_snakbar.dart';
 import '../../../../controller/account/account_cubit.dart';
 import '../../../widget/custom_button.dart';

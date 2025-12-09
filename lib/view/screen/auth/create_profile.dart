@@ -1,4 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:dr_ai/core/utils/helper/scaffold_snakbar.dart';
+import '../../../core/utils/theme/color.dart';
+import '../../../core/router/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dr_ai/controller/auth/sign_up/sign_up_cubit.dart';
 import 'package:dr_ai/controller/validation/formvalidation_cubit.dart';
 import 'package:dr_ai/view/widget/button_loading_indicator.dart';
@@ -88,28 +92,48 @@ class _CreateProfileState extends State<CreateProfile> {
               BlocConsumer<SignUpCubit, SignUpState>(
                 listener: (context, state) {
                   if (state is SignUpLoading) {
-                    _isLoading = true;
+                    setState(() {
+                      _isLoading = true;
+                    });
                   }
+                  // We handle CreatePasswordSuccess by doing nothing in listener 
+                  // but allowing the async button function to continue.
+                  // Wait, if async button function continues, it's fine.
+                  
                   if (state is CreateProfileSuccess) {
                     FocusScope.of(context).unfocus();
+                    // Do NOT set isLoading false here, waiting for verifyEmail
                   }
                   if (state is VerifyEmailSuccess) {
                     FocusScope.of(context).unfocus();
-                    _isLoading = false;
+                    setState(() {
+                      _isLoading = false;
+                    });
                     customDialogWithAnimation(context,
                         dismiss: false, screen: const LoginDialog());
                   }
                   if (state is CreateProfileFailure) {
-                    customSnackBar(context, state.errorMessage);
-                    _isLoading = false;
+                    customSnackBar(context, state.errorMessage, ColorManager.error);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    // If user is already created but profile failed, we might need logic.
+                    // But for now, just stop loading.
+                    if (state.errorMessage.contains("already in use") || state.errorMessage.contains("already_in_use")) {
+                       Future.delayed(const Duration(seconds: 2), () {
+                         if(mounted) Navigator.pushReplacementNamed(context, RouteManager.login);
+                       });
+                    }
                   }
                   if (state is VerifyEmailFailure) {
-                    customSnackBar(context, state.errorMessage);
-                    _isLoading = false;
-                  }
-                  if (state is CreateProfileFailure) {
-                    customSnackBar(context, state.errorMessage);
-                    _isLoading = false;
+                    customSnackBar(context, "${state.errorMessage} (Intenta loguearte para reenviar)", ColorManager.error);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                     // Even if verification failed, user might be created. Send to login.
+                     Future.delayed(const Duration(seconds: 3), () {
+                         if(mounted) Navigator.pushReplacementNamed(context, RouteManager.login);
+                     });
                   }
                 },
                 builder: (context, state) {
@@ -120,28 +144,48 @@ class _CreateProfileState extends State<CreateProfile> {
                         ? const ButtonLoadingIndicator()
                         : null,
                     title: "Enviar",
-                    onPressed: () async {
-                      if (formKey.currentState!.validate()) {
-                        formKey.currentState!.save();
-                        await cubit.createEmailAndPassword(
-                          email: widget.userCredential[0]!,
-                          password: widget.userCredential[1]!,
-                        );
-                        await cubit.createProfile(
-                          name: _name!,
-                          phoneNumber: _phoneNumber!,
-                          dob: _dob!,
-                          gender: _gender!,
-                          bloodType: _bloodType!,
-                          height: _height!,
-                          weight: _weight!,
-                          chronicDiseases: _chronicDiseases!,
-                          familyHistoryOfChronicDiseases:
-                              _familyHistoryOfChronicDiseases!,
-                        );
-                        await cubit.verifyEmail();
-                      }
-                    },
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState!.save();
+                          
+                          try {
+                              // 1. Create User
+                              await cubit.createEmailAndPassword(
+                                email: widget.userCredential[0]!,
+                                password: widget.userCredential[1]!,
+                              );
+
+                              // Check if user creation succeeded (user exists)
+                              // We can check if cubit state is NOT failure, but checking auth instance is safer
+                              if (FirebaseAuth.instance.currentUser != null) {
+                                 // 2. Create Profile
+                                 await cubit.createProfile(
+                                  name: _name!,
+                                  phoneNumber: _phoneNumber!,
+                                  dob: _dob!,
+                                  gender: _gender!,
+                                  bloodType: _bloodType!,
+                                  height: _height!,
+                                  weight: _weight!,
+                                  chronicDiseases: _chronicDiseases!,
+                                  familyHistoryOfChronicDiseases:
+                                      _familyHistoryOfChronicDiseases!,
+                                );
+                                
+                                if (!context.mounted) return;
+                                // 3. Verify Email
+                                customSnackBar(context, "Enviando correo de verificación...", ColorManager.green);
+                                await cubit.verifyEmail();
+                              } 
+                          } catch (e) {
+                              // Catch generic errors in the UI thread logic
+                              if (context.mounted) {
+                                 customSnackBar(context, "Error inesperado: $e", ColorManager.error);
+                              }
+                              setState(() { _isLoading = false; });
+                          }
+                        }
+                      },
                   );
                 },
               ),

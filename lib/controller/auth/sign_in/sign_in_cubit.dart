@@ -58,12 +58,7 @@ class SignInCubit extends Cubit<SignInState> {
     try {
       log("User init sign in with email: $email");
       UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password)
-          .timeout(Duration(seconds: 30), onTimeout: () {
-        emit(SignInFailure(message: "El inicio de sesión expiró. Inténtalo de nuevo."));
-        throw TimeoutException(
-            "El inicio de sesión expiró después de 30 segundos. Inténtalo de nuevo.");
-      });
+          .signInWithEmailAndPassword(email: email, password: password);
       log("User finish in: ${userCredential.user!.email}");
       if (userCredential.user!.emailVerified == true) {
         emit(SignInSuccess());
